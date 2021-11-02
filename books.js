@@ -8,7 +8,11 @@ class Book {
 }
 // making List
 class List {
+    static displayBooks() {
+        const books = Store.getBooks();
 
+        books.forEach((book) => List.addBookToList(book));
+    }
     static addBookToList(book) {
         const list = document.querySelector('#book-list');
 
@@ -36,6 +40,36 @@ class List {
         document.querySelector('#isbn').value = '';
     }
 }
+class Store {
+    static getBooks() {
+        let books;
+        if(localStorage.getItem('books') === null) {
+            books = [];
+        } else {
+            books = JSON.parse(localStorage.getItem('books'));
+        }
+
+        return books;
+    }
+
+    static addBook(book) {
+        const books = Store.getBooks();
+        books.push(book);
+        localStorage.setItem('books', JSON.stringify(books));
+    }
+
+    static removeBook(isbn) {
+        const books = Store.getBooks();
+
+        books.forEach((book, index) => {
+            if(book.isbn === isbn) {
+                books.splice(index, 1);
+            }
+        });
+
+        localStorage.setItem('books', JSON.stringify(books));
+    }
+}
 // Display Books
 document.addEventListener('DOMContentLoaded', List.displayBooks);
 
@@ -58,7 +92,8 @@ document.querySelector('#book-form').addEventListener('submit', (e) => {
 
         // Add Book to List
         List.addBookToList(book);
-
+        // Add book to store
+        Store.addBook(book);
         // Clear fields
         List.clearFields();
     }
@@ -67,4 +102,6 @@ document.querySelector('#book-form').addEventListener('submit', (e) => {
 document.querySelector('#book-list').addEventListener('click', (e) => {
     // Remove book from List
     List.deleteBook(e.target);
-});    UI.deleteBook(e.target);
+    List.deleteBook(e.target);
+    Store.removeBook(e.target.parentElement.previousElementSibling.textContent);
+});
